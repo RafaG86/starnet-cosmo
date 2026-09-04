@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>STARNET COSMO | CRM & Automation Hub</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+
+  <!-- App Header -->
+  <header class="app-header">
+    <div class="logo-area">
+      <div class="logo-badge">COSMO</div>
+      <div class="logo-title">
+        <h1>STARNET COSMO</h1>
+        <p>Hub Personal de Prospección, Automatización & Ventas Eclesiales</p>
+      </div>
+    </div>
+    <div class="header-actions">
+      <a href="/swagger" target="_blank" class="badge-api" title="Explorar Swagger OpenAPI">
+        <span class="badge-dot"></span>
+        <span>API REST :5100 Activa</span>
+      </a>
+      <button class="btn btn-secondary" onclick="openBulkModal()">📥 Importar Lote (Scraper)</button>
+      <button class="btn btn-primary" onclick="openNewLeadModal()">+ Nuevo Lead</button>
+    </div>
+  </header>
+
+  <!-- Metrics Bar -->
+  <section class="metrics-container">
+    <div class="metric-card">
+      <div class="metric-info">
+        <h3>Total Leads</h3>
+        <div class="value" id="mTotalLeads">0</div>
+      </div>
+      <div class="metric-icon">⛪</div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-info">
+        <h3>Demos Agendadas</h3>
+        <div class="value" id="mDemos" style="color:var(--cyan);">0</div>
+      </div>
+      <div class="metric-icon">📅</div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-info">
+        <h3>Ventas Ganadas</h3>
+        <div class="value" id="mGanados" style="color:var(--emerald);">0</div>
+      </div>
+      <div class="metric-icon">🏆</div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-info">
+        <h3>Tasa Conversión</h3>
+        <div class="value" id="mConversion" style="color:var(--primary);">0%</div>
+      </div>
+      <div class="metric-icon">📈</div>
+    </div>
+  </section>
+
+  <!-- Navigation Tabs -->
+  <nav class="tabs-bar">
+    <button class="tab-btn active" data-tab="tab-kanban">📊 Tablero Kanban</button>
+    <button class="tab-btn" data-tab="tab-directory">📋 Directorio Completo</button>
+    <button class="tab-btn" data-tab="tab-assistant">🧠 Asistente & Objeciones (Manual)</button>
+    <button class="tab-btn" data-tab="tab-automations">⚡ Conexión con Scrapers & API</button>
+  </nav>
+
+  <!-- Main Views Container -->
+  <main class="content-area">
+
+    <!-- TAB 1: KANBAN -->
+    <div id="tab-kanban" class="tab-view">
+      <div class="kanban-board" id="kanbanBoard"></div>
+    </div>
+
+    <!-- TAB 2: DIRECTORIO -->
+    <div id="tab-directory" class="tab-view hidden">
+      <div class="directory-controls">
+        <input type="text" id="searchInput" class="search-input" placeholder="🔍 Buscar por iglesia, pastor, ciudad o teléfono...">
+        <select id="productFilter" class="filter-select">
+          <option value="">Todos los Productos</option>
+          <option value="0">EkklesiApp</option>
+          <option value="1">ChordSync</option>
+          <option value="2">SermonSync</option>
+          <option value="3">Suite Completa</option>
+        </select>
+      </div>
+      <table class="custom-table">
+        <thead>
+          <tr>
+            <th>Iglesia</th>
+            <th>Ciudad</th>
+            <th>Contacto</th>
+            <th>Teléfono / WA</th>
+            <th>Interés</th>
+            <th>Etapa</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody id="directoryTbody"></tbody>
+      </table>
+    </div>
+
+    <!-- TAB 3: ASISTENTE & OBJECIONES -->
+    <div id="tab-assistant" class="tab-view hidden">
+      <div style="margin-bottom:1.5rem;">
+        <h2 style="font-size:1.2rem;margin-bottom:0.4rem;">Banco de Objeciones (Método E-V-P-R-C)</h2>
+        <p style="color:var(--text-secondary);font-size:0.85rem;">
+          Respuestas estructuradas del manual de STARNET: <strong>Escuchar → Validar → Preguntar → Responder → Confirmar</strong>.
+        </p>
+      </div>
+      <div id="objectionsList"></div>
+
+      <div style="margin-top:2rem;background:var(--bg-card);border:1px solid var(--border-color);border-radius:var(--radius-md);padding:1.5rem;">
+        <h3 style="font-size:1.05rem;color:var(--cyan);margin-bottom:0.75rem;">Metodología de Calificación T-O-N-D-M</h3>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(220px, 1fr));gap:1rem;font-size:0.85rem;">
+          <div style="background:var(--bg-main);padding:1rem;border-radius:6px;">
+            <strong style="color:var(--primary);">T - Tamaño:</strong>
+            <p style="color:var(--text-secondary);margin-top:0.3rem;">¿Cuántos miembros congregan? ¿Cuántas sedes? ¿Tienen células o grupos?</p>
+          </div>
+          <div style="background:var(--bg-main);padding:1rem;border-radius:6px;">
+            <strong style="color:var(--primary);">O - Operación:</strong>
+            <p style="color:var(--text-secondary);margin-top:0.3rem;">¿Cómo administran hoy? ¿Usan Excel, WhatsApp, Planning Center?</p>
+          </div>
+          <div style="background:var(--bg-main);padding:1rem;border-radius:6px;">
+            <strong style="color:var(--primary);">N - Necesidad / Dolor:</strong>
+            <p style="color:var(--text-secondary);margin-top:0.3rem;">¿Qué proceso les toma más tiempo? ¿Cómo identifican ausencias?</p>
+          </div>
+          <div style="background:var(--bg-main);padding:1rem;border-radius:6px;">
+            <strong style="color:var(--primary);">D - Decisión:</strong>
+            <p style="color:var(--text-secondary);margin-top:0.3rem;">¿Quién decide la compra? ¿El pastor principal, junta directiva o administración?</p>
+          </div>
+          <div style="background:var(--bg-main);padding:1rem;border-radius:6px;">
+            <strong style="color:var(--primary);">M - Momento:</strong>
+            <p style="color:var(--text-secondary);margin-top:0.3rem;">¿Tienen pensado implementar algo este mes o están explorando opciones?</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 4: AUTOMATIZACIONES & API -->
+    <div id="tab-automations" class="tab-view hidden">
+      <div style="margin-bottom:1.5rem;">
+        <h2 style="font-size:1.2rem;margin-bottom:0.4rem;">API Local de Ingesta & Automatizaciones</h2>
+        <p style="color:var(--text-secondary);font-size:0.85rem;">
+          Esta aplicación ejecuta un servidor local en <code>http://localhost:5100</code> listo para recibir leads de scripts o bots.
+        </p>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;">
+        <!-- Ejemplo Python Scraper -->
+        <div style="background:var(--bg-card);border:1px solid var(--border-color);border-radius:var(--radius-md);padding:1.25rem;">
+          <h3 style="font-size:0.95rem;color:var(--emerald);margin-bottom:0.5rem;">🐍 Inyección desde Scraper (Python)</h3>
+          <p style="font-size:0.8rem;color:var(--text-secondary);margin-bottom:0.75rem;">
+            Úsalo con Playwright/BeautifulSoup al extraer iglesias en Google Maps:
+          </p>
+          <div class="code-box">
+<pre>import requests
+
+leads = [
+    {
+        "nombreIglesia": "Comunidad Cristiana La Paz",
+        "ciudad": "Medellín",
+        "telefono": "3119876543",
+        "nombreContacto": "Pastor Andrés",
+        "cantidadMiembros": 250,
+        "productoInteres": 0, # EkklesiApp
+        "origen": 0 # GoogleMaps
+    }
+]
+
+res = requests.post(
+    "http://localhost:5100/api/leads/bulk",
+    json=leads
+)
+print("Resultado:", res.json())</pre>
+          </div>
+        </div>
+
+        <!-- Ejemplo cURL / Webhooks -->
+        <div style="background:var(--bg-card);border:1px solid var(--border-color);border-radius:var(--radius-md);padding:1.25rem;">
+          <h3 style="font-size:0.95rem;color:var(--cyan);margin-bottom:0.5rem;">⚡ Inyección vía cURL / n8n / Make</h3>
+          <p style="font-size:0.8rem;color:var(--text-secondary);margin-bottom:0.75rem;">
+            Ejecutable en cualquier terminal PowerShell o flujo de automatización:
+          </p>
+          <div class="code-box">
+<pre>curl -X POST http://localhost:5100/api/leads \
+  -H "Content-Type: application/json" \
+  -d '{
+    "nombreIglesia": "Iglesia Bautista Betel",
+    "ciudad": "Bogotá",
+    "telefono": "3151234567",
+    "nombreContacto": "Pastor Miguel",
+    "cantidadMiembros": 180,
+    "productoInteres": 0
+  }'</pre>
+          </div>
+          <div style="margin-top:1rem;">
+            <a href="/swagger" target="_blank" class="btn btn-primary btn-sm">Abrir Swagger UI Completo ↗</a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- MODAL: WHATSAPP DIRECTO CON SCRIPT -->
+  <div id="whatsappModal" class="modal-backdrop hidden">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <div>
+          <h3 style="font-size:1.05rem;" id="waChurchTitle">Enviar WhatsApp</h3>
+          <span style="font-size:0.8rem;color:var(--emerald);" id="waPhoneText"></span>
+        </div>
+        <button class="btn btn-secondary btn-sm" onclick="closeWhatsAppModal()">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label>Selecciona el Guion del Manual STARNET:</label>
+          <select id="waScriptSelect" class="form-control" onchange="updateWhatsAppPreview()">
+            <option value="frio">2.3 Lead Frío (Primer contacto)</option>
+            <option value="conocido">2.1 Contacto Conocido</option>
+            <option value="referido">2.2 Referido de otro Pastor</option>
+            <option value="inbound">2.4 Lead Inbound (Solicitud Web)</option>
+            <option value="followup1">7.2 Follow-up 1 (Revisión de propuesta)</option>
+            <option value="cierre_cordial">2.12 Cierre Cordial (Sin respuesta)</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Mensaje Personalizado Listo para Enviar:</label>
+          <textarea id="waMessagePreview" class="form-control" rows="6"></textarea>
+        </div>
+        <div style="display:flex;justify-content:flex-end;gap:0.5rem;margin-top:1rem;">
+          <button class="btn btn-secondary" onclick="closeWhatsAppModal()">Cancelar</button>
+          <button class="btn btn-success" id="waSendBtn">🚀 Abrir en WhatsApp</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: DETALLE DE LEAD -->
+  <div id="leadDetailModal" class="modal-backdrop hidden">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <h3 style="font-size:1.05rem;" id="detailChurchName">Ficha del Lead</h3>
+        <button class="btn btn-secondary btn-sm" onclick="closeDetailModal()">✕</button>
+      </div>
+      <div class="modal-body" id="detailContent"></div>
+    </div>
+  </div>
+
+  <!-- MODAL: HANDOFF STARNET HUB -->
+  <div id="handoffModal" class="modal-backdrop hidden">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <h3 style="font-size:1.05rem;">📋 Expediente Oficial - STARNET HUB</h3>
+        <button class="btn btn-secondary btn-sm" onclick="closeHandoffModal()">✕</button>
+      </div>
+      <div class="modal-body">
+        <p style="font-size:0.82rem;color:var(--text-secondary);margin-bottom:0.75rem;">
+          Copia este expediente listo según la Sección 9.2 del Manual para registrar o entregar el cliente a Administración y Customer Success:
+        </p>
+        <textarea id="handoffContent" class="form-control" rows="12" style="font-family:monospace;font-size:0.8rem;"></textarea>
+        <div style="display:flex;justify-content:flex-end;gap:0.5rem;margin-top:1rem;">
+          <button class="btn btn-secondary" onclick="closeHandoffModal()">Cerrar</button>
+          <button class="btn btn-primary" onclick="copyHandoffToClipboard()">📋 Copiar Expediente</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: NUEVO LEAD -->
+  <div id="newLeadModal" class="modal-backdrop hidden">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <h3 style="font-size:1.05rem;">➕ Registrar Nuevo Prospecto</h3>
+        <button class="btn btn-secondary btn-sm" onclick="closeNewLeadModal()">✕</button>
+      </div>
+      <div class="modal-body">
+        <form id="newLeadForm" onsubmit="saveNewLead(event)">
+          <div class="form-grid">
+            <div class="form-group full-width">
+              <label>Nombre de la Iglesia *</label>
+              <input type="text" name="nombreIglesia" class="form-control" required placeholder="Ej: Iglesia Cristiana Bethel">
+            </div>
+            <div class="form-group">
+              <label>Ciudad *</label>
+              <input type="text" name="ciudad" class="form-control" required placeholder="Ej: Bogotá">
+            </div>
+            <div class="form-group">
+              <label>Producto de Interés</label>
+              <select name="productoInteres" class="form-control">
+                <option value="0">EkklesiApp (Gestión & Cuidado)</option>
+                <option value="1">ChordSync (Música & Alabanza)</option>
+                <option value="2">SermonSync (Predicación & Culto)</option>
+                <option value="3">Suite Completa</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Nombre del Contacto / Pastor</label>
+              <input type="text" name="nombreContacto" class="form-control" placeholder="Ej: Pastor Carlos">
+            </div>
+            <div class="form-group">
+              <label>Cargo</label>
+              <input type="text" name="cargoContacto" class="form-control" placeholder="Ej: Pastor Principal">
+            </div>
+            <div class="form-group">
+              <label>Teléfono / WhatsApp</label>
+              <input type="text" name="telefono" class="form-control" placeholder="Ej: 3001234567">
+            </div>
+            <div class="form-group">
+              <label>Correo Electrónico</label>
+              <input type="email" name="email" class="form-control" placeholder="pastor@iglesia.org">
+            </div>
+            <div class="form-group">
+              <label>Cantidad de Miembros Aprox.</label>
+              <input type="number" name="cantidadMiembros" class="form-control" placeholder="Ej: 200">
+            </div>
+            <div class="form-group">
+              <label>Número de Sedes</label>
+              <input type="number" name="numeroSedes" class="form-control" value="1">
+            </div>
+            <div class="form-group full-width">
+              <label>Herramienta Actual (Operación)</label>
+              <input type="text" name="herramientaActual" class="form-control" placeholder="Ej: Excel, WhatsApp, Planning Center...">
+            </div>
+            <div class="form-group full-width">
+              <label>Dolor Principal (Necesidad)</label>
+              <input type="text" name="dolorPrincipal" class="form-control" placeholder="Ej: Dificultad para saber ausencias y consolidación">
+            </div>
+            <div class="form-group full-width">
+              <label>Notas Iniciales</label>
+              <textarea name="notas" class="form-control" rows="2" placeholder="Observaciones de contacto..."></textarea>
+            </div>
+          </div>
+          <div style="display:flex;justify-content:flex-end;gap:0.5rem;margin-top:1rem;">
+            <button type="button" class="btn btn-secondary" onclick="closeNewLeadModal()">Cancelar</button>
+            <button type="submit" class="btn btn-primary">Guardar Prospecto</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: IMPORTAR LOTE (SCRAPER) -->
+  <div id="bulkModal" class="modal-backdrop hidden">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <h3 style="font-size:1.05rem;">📥 Ingesta Masiva de Prospectos (JSON)</h3>
+        <button class="btn btn-secondary btn-sm" onclick="closeBulkModal()">✕</button>
+      </div>
+      <div class="modal-body">
+        <p style="font-size:0.82rem;color:var(--text-secondary);margin-bottom:0.75rem;">
+          Pega el arreglo JSON exportado por tus scrapers de Google Maps o redes. La app validará duplicados automáticamente:
+        </p>
+        <textarea id="bulkJsonInput" class="form-control" rows="10" style="font-family:monospace;font-size:0.8rem;"></textarea>
+        <div style="display:flex;justify-content:flex-end;gap:0.5rem;margin-top:1rem;">
+          <button class="btn btn-secondary" onclick="closeBulkModal()">Cancelar</button>
+          <button class="btn btn-success" onclick="executeBulkImport()">Procesar e Importar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="/js/app.js"></script>
+</body>
+</html>
