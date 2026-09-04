@@ -199,6 +199,7 @@ public class LeadService : ILeadService
                 Pais = country,
                 Direccion = item.Direccion?.Trim(),
                 Telefono = cleanPhone,
+                Email = item.Email?.Trim().ToLower(),
                 NombreContacto = item.NombreContacto?.Trim(),
                 SitioWeb = item.SitioWeb?.Trim(),
                 RedesSociales = item.RedesSociales?.Trim(),

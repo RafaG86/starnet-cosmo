@@ -43,6 +43,7 @@ public class LeadBulkItemDto
     public string? Pais { get; set; } = "Colombia";
     public string? Direccion { get; set; }
     public string? Telefono { get; set; }
+    public string? Email { get; set; }
     public string? NombreContacto { get; set; }
     public string? SitioWeb { get; set; }
     public string? RedesSociales { get; set; }
