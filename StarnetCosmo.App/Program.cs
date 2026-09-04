@@ -18,6 +18,12 @@ builder.Services.AddDbContext<StarnetDbContext>(options =>
 // Inyección de dependencias
 builder.Services.AddScoped<ILeadService, LeadService>();
 
+// Configurar serialización JSON para ignorar ciclos de referencia
+builder.Services.ConfigureHttpJsonOptions(options =>
+{
+    options.SerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles;
+});
+
 // CORS abierto para permitir llamadas desde scrapers locales, extensiones o n8n
 builder.Services.AddCors(options =>
 {

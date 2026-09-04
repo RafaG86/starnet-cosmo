@@ -2,7 +2,7 @@ const API_BASE = '/api';
 
 // Estado global de la app
 let leadsData = [];
-let currentFilter = { query: '', estado: '', producto: '', ciudad: '' };
+let currentFilter = { query: '', estado: '', producto: '', ciudad: '', pais: '' };
 
 const PIPELINE_STAGES = [
   { key: 0, name: 'Nuevo', color: '#64748b' },
@@ -72,6 +72,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     currentFilter.query = e.target.value;
     filterAndRender();
   });
+  document.getElementById('countryFilter')?.addEventListener('change', (e) => {
+    currentFilter.pais = e.target.value;
+    filterAndRender();
+  });
   document.getElementById('productFilter')?.addEventListener('change', (e) => {
     currentFilter.producto = e.target.value;
     filterAndRender();
@@ -133,10 +137,12 @@ function getFilteredLeads() {
       l.nombreIglesia?.toLowerCase().includes(q) ||
       l.nombreContacto?.toLowerCase().includes(q) ||
       l.ciudad?.toLowerCase().includes(q) ||
+      l.pais?.toLowerCase().includes(q) ||
       l.telefono?.includes(q);
 
     const matchProd = !currentFilter.producto || l.productoInteres.toString() === currentFilter.producto;
-    return matchQ && matchProd;
+    const matchPais = !currentFilter.pais || (l.pais && l.pais.toLowerCase() === currentFilter.pais.toLowerCase());
+    return matchQ && matchProd && matchPais;
   });
 }
 
@@ -178,7 +184,7 @@ function renderKanban() {
           <span class="badge-product ${prodBadgeClass}">${prodName}</span>
         </div>
         <div class="lead-meta">
-          <div>📍 ${escapeHtml(lead.ciudad || 'Colombia')} ${lead.cantidadMiembros ? '· 👥 ' + lead.cantidadMiembros + ' m.' : ''}</div>
+          <div>📍 ${escapeHtml(lead.ciudad || '')}, ${escapeHtml(lead.pais || 'Colombia')} ${lead.cantidadMiembros ? '· 👥 ' + lead.cantidadMiembros + ' m.' : ''}</div>
           <div>👤 ${escapeHtml(lead.nombreContacto || 'Pastor')} (${escapeHtml(lead.cargoContacto || 'Líder')})</div>
           ${lead.telefono ? '<div>📞 ' + escapeHtml(lead.telefono) + '</div>' : ''}
         </div>
@@ -220,7 +226,7 @@ function renderDirectory() {
 
     tr.innerHTML = `
       <td><strong>${escapeHtml(lead.nombreIglesia)}</strong></td>
-      <td>${escapeHtml(lead.ciudad || 'Colombia')}</td>
+      <td><strong>${escapeHtml(lead.pais || 'Colombia')}</strong> · <span style="color:var(--text-secondary);">${escapeHtml(lead.ciudad || '')}</span></td>
       <td>${escapeHtml(lead.nombreContacto || 'Pastor')}</td>
       <td>${escapeHtml(lead.telefono || 'Sin teléfono')}</td>
       <td><span class="badge-product ${getProductBadgeClass(lead.productoInteres)}">${prodName}</span></td>
@@ -418,6 +424,7 @@ async function saveNewLead(e) {
   const form = document.getElementById('newLeadForm');
   const payload = {
     nombreIglesia: form.nombreIglesia.value,
+    pais: form.pais.value || 'Colombia',
     ciudad: form.ciudad.value || 'Colombia',
     nombreContacto: form.nombreContacto.value,
     cargoContacto: form.cargoContacto.value || 'Pastor',

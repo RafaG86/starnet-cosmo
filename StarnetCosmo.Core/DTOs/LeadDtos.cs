@@ -40,6 +40,7 @@ public class LeadBulkItemDto
 {
     public string NombreIglesia { get; set; } = string.Empty;
     public string? Ciudad { get; set; }
+    public string? Pais { get; set; } = "Colombia";
     public string? Direccion { get; set; }
     public string? Telefono { get; set; }
     public string? NombreContacto { get; set; }
@@ -71,6 +72,7 @@ public class LeadFilterDto
     public PipelineStage? Estado { get; set; }
     public ProductInterest? Producto { get; set; }
     public string? Ciudad { get; set; }
+    public string? Pais { get; set; }
     public int Pagina { get; set; } = 1;
     public int CantidadPorPagina { get; set; } = 50;
 }

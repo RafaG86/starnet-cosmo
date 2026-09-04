@@ -17,8 +17,9 @@ public static class LeadEndpoints
             [FromQuery] PipelineStage? estado,
             [FromQuery] ProductInterest? producto,
             [FromQuery] string? ciudad,
-            [FromQuery] int pagina,
-            [FromQuery] int cantidadPorPagina,
+            [FromQuery] string? pais,
+            [FromQuery] int? pagina,
+            [FromQuery] int? cantidadPorPagina,
             [FromServices] ILeadService leadService) =>
         {
             var filter = new LeadFilterDto
@@ -27,8 +28,9 @@ public static class LeadEndpoints
                 Estado = estado,
                 Producto = producto,
                 Ciudad = ciudad,
-                Pagina = pagina <= 0 ? 1 : pagina,
-                CantidadPorPagina = cantidadPorPagina <= 0 ? 100 : cantidadPorPagina
+                Pais = pais,
+                Pagina = !pagina.HasValue || pagina.Value <= 0 ? 1 : pagina.Value,
+                CantidadPorPagina = !cantidadPorPagina.HasValue || cantidadPorPagina.Value <= 0 ? 100 : cantidadPorPagina.Value
             };
 
             var leads = await leadService.GetLeadsAsync(filter);

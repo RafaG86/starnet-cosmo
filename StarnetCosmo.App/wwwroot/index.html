@@ -81,7 +81,30 @@
     <!-- TAB 2: DIRECTORIO -->
     <div id="tab-directory" class="tab-view hidden">
       <div class="directory-controls">
-        <input type="text" id="searchInput" class="search-input" placeholder="🔍 Buscar por iglesia, pastor, ciudad o teléfono...">
+        <input type="text" id="searchInput" class="search-input" placeholder="🔍 Buscar por iglesia, pastor, ciudad, país o teléfono...">
+        <select id="countryFilter" class="filter-select">
+          <option value="">🌎 Todos los Países</option>
+          <option value="Colombia">🇨🇴 Colombia</option>
+          <option value="México">🇲🇽 México</option>
+          <option value="Argentina">🇦🇷 Argentina</option>
+          <option value="España">🇪🇸 España</option>
+          <option value="Perú">🇵🇪 Perú</option>
+          <option value="Chile">🇨🇱 Chile</option>
+          <option value="Guatemala">🇬🇹 Guatemala</option>
+          <option value="Ecuador">🇪🇨 Ecuador</option>
+          <option value="Bolivia">🇧🇴 Bolivia</option>
+          <option value="República Dominicana">🇩🇴 Rep. Dominicana</option>
+          <option value="Honduras">🇭🇳 Honduras</option>
+          <option value="El Salvador">🇸🇻 El Salvador</option>
+          <option value="Costa Rica">🇨🇷 Costa Rica</option>
+          <option value="Panamá">🇵🇦 Panamá</option>
+          <option value="Paraguay">🇵🇾 Paraguay</option>
+          <option value="Nicaragua">🇳🇮 Nicaragua</option>
+          <option value="Uruguay">🇺🇾 Uruguay</option>
+          <option value="Puerto Rico">🇵🇷 Puerto Rico</option>
+          <option value="Venezuela">🇻🇪 Venezuela</option>
+          <option value="Estados Unidos">🇺🇸 Estados Unidos</option>
+        </select>
         <select id="productFilter" class="filter-select">
           <option value="">Todos los Productos</option>
           <option value="0">EkklesiApp</option>
@@ -94,7 +117,7 @@
         <thead>
           <tr>
             <th>Iglesia</th>
-            <th>Ciudad</th>
+            <th>País / Ciudad</th>
             <th>Contacto</th>
             <th>Teléfono / WA</th>
             <th>Interés</th>
@@ -289,8 +312,33 @@ print("Resultado:", res.json())</pre>
               <input type="text" name="nombreIglesia" class="form-control" required placeholder="Ej: Iglesia Cristiana Bethel">
             </div>
             <div class="form-group">
+              <label>País *</label>
+              <select name="pais" class="form-control" required>
+                <option value="Colombia" selected>🇨🇴 Colombia</option>
+                <option value="México">🇲🇽 México</option>
+                <option value="Argentina">🇦🇷 Argentina</option>
+                <option value="España">🇪🇸 España</option>
+                <option value="Perú">🇵🇪 Perú</option>
+                <option value="Chile">🇨🇱 Chile</option>
+                <option value="Guatemala">🇬🇹 Guatemala</option>
+                <option value="Ecuador">🇪🇨 Ecuador</option>
+                <option value="Bolivia">🇧🇴 Bolivia</option>
+                <option value="República Dominicana">🇩🇴 República Dominicana</option>
+                <option value="Honduras">🇭🇳 Honduras</option>
+                <option value="El Salvador">🇸🇻 El Salvador</option>
+                <option value="Costa Rica">🇨🇷 Costa Rica</option>
+                <option value="Panamá">🇵🇦 Panamá</option>
+                <option value="Paraguay">🇵🇾 Paraguay</option>
+                <option value="Nicaragua">🇳🇮 Nicaragua</option>
+                <option value="Uruguay">🇺🇾 Uruguay</option>
+                <option value="Puerto Rico">🇵🇷 Puerto Rico</option>
+                <option value="Venezuela">🇻🇪 Venezuela</option>
+                <option value="Estados Unidos">🇺🇸 Estados Unidos (Hispano)</option>
+              </select>
+            </div>
+            <div class="form-group">
               <label>Ciudad *</label>
-              <input type="text" name="ciudad" class="form-control" required placeholder="Ej: Bogotá">
+              <input type="text" name="ciudad" class="form-control" required placeholder="Ej: Bogotá, CDMX, Lima...">
             </div>
             <div class="form-group">
               <label>Producto de Interés</label>

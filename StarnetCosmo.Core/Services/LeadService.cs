@@ -30,6 +30,7 @@ public class LeadService : ILeadService
                 l.NombreIglesia.ToLower().Contains(term) ||
                 (l.NombreContacto != null && l.NombreContacto.ToLower().Contains(term)) ||
                 (l.Ciudad != null && l.Ciudad.ToLower().Contains(term)) ||
+                (l.Pais != null && l.Pais.ToLower().Contains(term)) ||
                 (l.Telefono != null && l.Telefono.Contains(term)) ||
                 (l.Email != null && l.Email.ToLower().Contains(term)));
         }
@@ -47,6 +48,11 @@ public class LeadService : ILeadService
         if (!string.IsNullOrWhiteSpace(filter.Ciudad))
         {
             query = query.Where(l => l.Ciudad.ToLower() == filter.Ciudad.Trim().ToLower());
+        }
+
+        if (!string.IsNullOrWhiteSpace(filter.Pais))
+        {
+            query = query.Where(l => l.Pais.ToLower() == filter.Pais.Trim().ToLower());
         }
 
         return await query
@@ -171,7 +177,8 @@ public class LeadService : ILeadService
 
             var cleanPhone = CleanPhoneNumber(item.Telefono);
             var city = string.IsNullOrWhiteSpace(item.Ciudad) ? "Colombia" : item.Ciudad.Trim();
-            var churchKey = (item.NombreIglesia.Trim().ToLower() + "|" + city.ToLower());
+            var country = string.IsNullOrWhiteSpace(item.Pais) ? "Colombia" : item.Pais.Trim();
+            var churchKey = (item.NombreIglesia.Trim().ToLower() + "|" + city.ToLower() + "|" + country.ToLower());
 
             if (!string.IsNullOrEmpty(cleanPhone) && phoneSet.Contains(cleanPhone))
             {
@@ -189,6 +196,7 @@ public class LeadService : ILeadService
             {
                 NombreIglesia = item.NombreIglesia.Trim(),
                 Ciudad = city,
+                Pais = country,
                 Direccion = item.Direccion?.Trim(),
                 Telefono = cleanPhone,
                 NombreContacto = item.NombreContacto?.Trim(),
@@ -353,13 +361,66 @@ public class LeadService : ILeadService
         };
 
         string rawPhone = Regex.Replace(lead.Telefono, @"[^\d]", "");
-        if (rawPhone.Length == 10 && rawPhone.StartsWith("3"))
+        string country = string.IsNullOrWhiteSpace(lead.Pais) ? "Colombia" : lead.Pais.Trim();
+
+        if (CountryPhoneCodes.TryGetValue(country, out var prefix))
         {
-            rawPhone = "57" + rawPhone; // Código Colombia
+            if (!rawPhone.StartsWith(prefix))
+            {
+                // Si es Colombia y tiene 10 dígitos (ej: 3001234567)
+                if (prefix == "57" && rawPhone.Length == 10 && rawPhone.StartsWith("3"))
+                {
+                    rawPhone = "57" + rawPhone;
+                }
+                // Si es México y tiene 10 dígitos
+                else if (prefix == "52" && rawPhone.Length == 10)
+                {
+                    rawPhone = "52" + rawPhone;
+                }
+                // Otros países
+                else if (!rawPhone.StartsWith(prefix))
+                {
+                    rawPhone = prefix + rawPhone;
+                }
+            }
+        }
+        else if (rawPhone.Length == 10 && rawPhone.StartsWith("3"))
+        {
+            rawPhone = "57" + rawPhone;
         }
 
         return $"https://wa.me/{rawPhone}?text={Uri.EscapeDataString(mensaje)}";
     }
+
+    private static readonly Dictionary<string, string> CountryPhoneCodes = new(StringComparer.OrdinalIgnoreCase)
+    {
+        { "Colombia", "57" },
+        { "México", "52" },
+        { "Mexico", "52" },
+        { "Argentina", "54" },
+        { "España", "34" },
+        { "Espana", "34" },
+        { "Perú", "51" },
+        { "Peru", "51" },
+        { "Chile", "56" },
+        { "Guatemala", "502" },
+        { "Ecuador", "593" },
+        { "Bolivia", "591" },
+        { "República Dominicana", "1" },
+        { "Republica Dominicana", "1" },
+        { "Honduras", "504" },
+        { "Paraguay", "595" },
+        { "El Salvador", "503" },
+        { "Nicaragua", "505" },
+        { "Costa Rica", "506" },
+        { "Panamá", "507" },
+        { "Panama", "507" },
+        { "Uruguay", "598" },
+        { "Puerto Rico", "1" },
+        { "Venezuela", "58" },
+        { "Estados Unidos", "1" },
+        { "USA", "1" }
+    };
 
     public string GenerateStarnetHubHandoff(Lead lead)
     {

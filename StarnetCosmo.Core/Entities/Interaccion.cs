@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Serialization;
 
 namespace StarnetCosmo.Core.Entities;
 
@@ -7,6 +8,8 @@ public class Interaccion
     public int Id { get; set; }
 
     public int LeadId { get; set; }
+
+    [JsonIgnore]
     public Lead? Lead { get; set; }
 
     public InteractionType Tipo { get; set; } = InteractionType.WhatsApp;
