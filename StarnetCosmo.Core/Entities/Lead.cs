@@ -83,4 +83,5 @@ public class Lead
 
     // Relaciones
     public List<Interaccion> Interacciones { get; set; } = new();
+    public CalificacionTondm? CalificacionTondm { get; set; }
 }

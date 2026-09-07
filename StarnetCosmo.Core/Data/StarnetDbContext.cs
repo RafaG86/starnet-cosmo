@@ -11,6 +11,7 @@ public class StarnetDbContext : DbContext
 
     public DbSet<Lead> Leads => Set<Lead>();
     public DbSet<Interaccion> Interacciones => Set<Interaccion>();
+    public DbSet<CalificacionTondm> CalificacionesTondm => Set<CalificacionTondm>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -33,9 +34,17 @@ public class StarnetDbContext : DbContext
             entity.HasIndex(e => e.FechaCreacion)
                   .HasDatabaseName("IX_Leads_FechaCreacion");
 
+            entity.HasIndex(e => new { e.Pais, e.Ciudad })
+                  .HasDatabaseName("IX_Leads_Pais_Ciudad");
+
             entity.HasMany(e => e.Interacciones)
                   .WithOne(i => i.Lead)
                   .HasForeignKey(i => i.LeadId)
+                  .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasOne(e => e.CalificacionTondm)
+                  .WithOne(c => c.Lead)
+                  .HasForeignKey<CalificacionTondm>(c => c.LeadId)
                   .OnDelete(DeleteBehavior.Cascade);
         });
 
@@ -44,6 +53,13 @@ public class StarnetDbContext : DbContext
             entity.HasKey(i => i.Id);
             entity.HasIndex(i => i.LeadId);
             entity.HasIndex(i => i.Fecha);
+        });
+
+        modelBuilder.Entity<CalificacionTondm>(entity =>
+        {
+            entity.HasKey(c => c.Id);
+            entity.HasIndex(c => c.LeadId).IsUnique();
+            entity.HasIndex(c => c.FechaLlamada);
         });
     }
 }

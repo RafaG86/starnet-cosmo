@@ -178,24 +178,35 @@ function renderKanban() {
       const prodBadgeClass = getProductBadgeClass(lead.productoInteres);
       const prodName = getProductName(lead.productoInteres);
 
+      const isMobile = isMobilePhone(lead.telefono, lead.pais);
+      const phoneBadge = lead.telefono ? (isMobile ? '<span class="badge-mobile">Móvil WA</span>' : '<span class="badge-landline">Fijo</span>') : '';
+      const tondmBadge = lead.calificacionTondm?.calificacionCompletada ? '<span style="font-size:0.65rem;background:rgba(99,102,241,0.25);color:#818cf8;border:1px solid rgba(99,102,241,0.4);border-radius:4px;padding:0.1rem 0.35rem;font-weight:700;">TONDM ✓</span>' : '';
+
       card.innerHTML = `
         <div class="lead-card-header">
           <div class="lead-church-name">${escapeHtml(lead.nombreIglesia)}</div>
-          <span class="badge-product ${prodBadgeClass}">${prodName}</span>
+          <div style="display:flex;gap:0.3rem;align-items:center;">
+            ${tondmBadge}
+            <span class="badge-product ${prodBadgeClass}">${prodName}</span>
+          </div>
         </div>
         <div class="lead-meta">
           <div>📍 ${escapeHtml(lead.ciudad || '')}, ${escapeHtml(lead.pais || 'Colombia')} ${lead.cantidadMiembros ? '· 👥 ' + lead.cantidadMiembros + ' m.' : ''}</div>
           <div>👤 ${escapeHtml(lead.nombreContacto || 'Pastor')} (${escapeHtml(lead.cargoContacto || 'Líder')})</div>
-          ${lead.telefono ? '<div>📞 ' + escapeHtml(lead.telefono) + '</div>' : ''}
+          ${lead.telefono ? `<div>📞 ${escapeHtml(lead.telefono)} ${phoneBadge}</div>` : ''}
+          ${lead.email ? `<div>✉️ ${escapeHtml(lead.email)}</div>` : ''}
         </div>
         <div class="lead-footer-actions">
-          <div style="display:flex;gap:0.3rem;">
-            ${lead.telefono ? `<button class="btn btn-success btn-sm" onclick="openWhatsAppModal(${lead.id})">💬 WhatsApp</button>` : ''}
-            <button class="btn btn-secondary btn-sm" onclick="viewLeadDetail(${lead.id})">📄 Ficha</button>
+          <div style="display:flex;gap:0.25rem;flex-wrap:wrap;">
+            ${lead.telefono ? `<button class="btn btn-success btn-sm" onclick="openWhatsAppModal(${lead.id})">💬 WA</button>` : ''}
+            <button class="btn btn-tondm btn-sm" onclick="openTondmModal(${lead.id})" title="Calificar llamada TONDM">📞 TONDM</button>
+            <button class="btn btn-secondary btn-sm" onclick="openEditLeadModal(${lead.id})" title="Editar iglesia">✏️</button>
+            <button class="btn btn-secondary btn-sm" onclick="viewLeadDetail(${lead.id})" title="Ver ficha">📄</button>
+            <button class="btn btn-danger btn-sm" onclick="deleteLead(${lead.id})" title="Eliminar iglesia">🗑️</button>
           </div>
-          <div style="display:flex;gap:0.2rem;">
-            ${stage.key > 0 ? `<button class="btn btn-secondary btn-sm" title="Retroceder" onclick="moveStage(${lead.id}, ${stage.key - 1})">◀</button>` : ''}
-            ${stage.key < 7 ? `<button class="btn btn-primary btn-sm" title="Avanzar" onclick="moveStage(${lead.id}, ${stage.key + 1})">▶</button>` : ''}
+          <div style="display:flex;gap:0.2rem;margin-top:0.3rem;">
+            ${stage.key > 0 ? `<button class="btn btn-secondary btn-sm" title="Retroceder etapa" onclick="moveStage(${lead.id}, ${stage.key - 1})">◀</button>` : ''}
+            ${stage.key < 7 ? `<button class="btn btn-primary btn-sm" title="Avanzar etapa" onclick="moveStage(${lead.id}, ${stage.key + 1})">▶</button>` : ''}
           </div>
         </div>
       `;
@@ -224,18 +235,31 @@ function renderDirectory() {
     const stageName = PIPELINE_STAGES.find(s => s.key === lead.estadoPipeline)?.name || 'Nuevo';
     const prodName = getProductName(lead.productoInteres);
 
+    const isMobile = isMobilePhone(lead.telefono, lead.pais);
+    const phoneBadge = lead.telefono ? (isMobile ? '<span class="badge-mobile">Móvil WA</span>' : '<span class="badge-landline">Fijo</span>') : '';
+    const tondmStatus = lead.calificacionTondm?.calificacionCompletada ? '<span style="color:#818cf8;font-weight:700;">TONDM ✓</span>' : '<span style="color:var(--text-muted);font-size:0.75rem;">Pendiente</span>';
+
     tr.innerHTML = `
-      <td><strong>${escapeHtml(lead.nombreIglesia)}</strong></td>
+      <td>
+        <strong>${escapeHtml(lead.nombreIglesia)}</strong>
+        ${lead.direccion ? `<div style="font-size:0.75rem;color:var(--text-secondary);">${escapeHtml(lead.direccion)}</div>` : ''}
+      </td>
       <td><strong>${escapeHtml(lead.pais || 'Colombia')}</strong> · <span style="color:var(--text-secondary);">${escapeHtml(lead.ciudad || '')}</span></td>
       <td>${escapeHtml(lead.nombreContacto || 'Pastor')}</td>
-      <td>${escapeHtml(lead.telefono || 'Sin teléfono')}</td>
+      <td>${escapeHtml(lead.telefono || 'Sin teléfono')} ${phoneBadge}</td>
       <td><span class="badge-product ${getProductBadgeClass(lead.productoInteres)}">${prodName}</span></td>
-      <td><span style="font-weight:600;">${stageName}</span></td>
       <td>
-        <div style="display:flex;gap:0.3rem;">
-          ${lead.telefono ? `<button class="btn btn-success btn-sm" onclick="openWhatsAppModal(${lead.id})">WhatsApp</button>` : ''}
-          <button class="btn btn-secondary btn-sm" onclick="viewLeadDetail(${lead.id})">Ver</button>
-          <button class="btn btn-secondary btn-sm" onclick="exportHandoff(${lead.id})">HUB</button>
+        <span style="font-weight:600;">${stageName}</span>
+        <div style="font-size:0.75rem;">${tondmStatus}</div>
+      </td>
+      <td>
+        <div style="display:flex;gap:0.25rem;flex-wrap:wrap;">
+          ${lead.telefono ? `<button class="btn btn-success btn-sm" onclick="openWhatsAppModal(${lead.id})" title="Enviar WhatsApp">WA</button>` : ''}
+          <button class="btn btn-tondm btn-sm" onclick="openTondmModal(${lead.id})" title="Calificar TONDM">TONDM</button>
+          <button class="btn btn-secondary btn-sm" onclick="openEditLeadModal(${lead.id})" title="Editar iglesia">Editar</button>
+          <button class="btn btn-secondary btn-sm" onclick="viewLeadDetail(${lead.id})" title="Ver ficha">Ficha</button>
+          <button class="btn btn-secondary btn-sm" onclick="exportHandoff(${lead.id})" title="Copiar Handoff">HUB</button>
+          <button class="btn btn-danger btn-sm" onclick="deleteLead(${lead.id})" title="Eliminar iglesia">✕</button>
         </div>
       </td>
     `;
@@ -511,6 +535,274 @@ async function executeBulkImport() {
     }
   } catch (e) {
     alert('JSON inválido: Por favor revise la sintaxis.');
+  }
+}
+
+// Helper para detectar teléfono móvil
+function isMobilePhone(phone, pais) {
+  if (!phone) return false;
+  const digits = phone.replace(/[^\d]/g, '');
+  if (!pais || pais.toLowerCase().includes('colombia')) {
+    if (digits.startsWith('573') && digits.length === 12) return true;
+    if (digits.startsWith('3') && digits.length === 10) return true;
+  }
+  return digits.length >= 10;
+}
+
+// ==========================================
+// CRUD: EDITAR IGLESIA
+// ==========================================
+async function openEditLeadModal(id) {
+  try {
+    const res = await fetch(`${API_BASE}/leads/${id}`);
+    if (!res.ok) {
+      alert('No se pudo cargar la información de la iglesia.');
+      return;
+    }
+    const lead = await res.json();
+
+    document.getElementById('editLeadId').value = lead.id;
+    document.getElementById('editNombreIglesia').value = lead.nombreIglesia || '';
+    document.getElementById('editPais').value = lead.pais || 'Colombia';
+    document.getElementById('editCiudad').value = lead.ciudad || '';
+    document.getElementById('editDireccion').value = lead.direccion || '';
+    document.getElementById('editTelefono').value = lead.telefono || '';
+    document.getElementById('editEmail').value = lead.email || '';
+    document.getElementById('editSitioWeb').value = lead.sitioWeb || '';
+    document.getElementById('editRedesSociales').value = lead.redesSociales || '';
+    document.getElementById('editNombreContacto').value = lead.nombreContacto || '';
+    document.getElementById('editCargoContacto').value = lead.cargoContacto || '';
+    document.getElementById('editProductoInteres').value = lead.productoInteres ?? 0;
+    document.getElementById('editEstadoPipeline').value = lead.estadoPipeline ?? 0;
+    document.getElementById('editPrioridad').value = lead.prioridad || 'Media';
+    document.getElementById('editEsDecisor').value = lead.esDecisor ? 'true' : 'false';
+    document.getElementById('editNotas').value = lead.notas || '';
+
+    document.getElementById('editLeadModal').classList.remove('hidden');
+  } catch (err) {
+    console.error('Error al abrir modal de edición:', err);
+  }
+}
+
+function closeEditLeadModal() {
+  document.getElementById('editLeadModal').classList.add('hidden');
+}
+
+async function saveEditLead(e) {
+  e.preventDefault();
+  const id = document.getElementById('editLeadId').value;
+  const payload = {
+    nombreIglesia: document.getElementById('editNombreIglesia').value,
+    pais: document.getElementById('editPais').value,
+    ciudad: document.getElementById('editCiudad').value,
+    direccion: document.getElementById('editDireccion').value,
+    telefono: document.getElementById('editTelefono').value,
+    email: document.getElementById('editEmail').value,
+    sitioWeb: document.getElementById('editSitioWeb').value,
+    redesSociales: document.getElementById('editRedesSociales').value,
+    nombreContacto: document.getElementById('editNombreContacto').value,
+    cargoContacto: document.getElementById('editCargoContacto').value,
+    productoInteres: parseInt(document.getElementById('editProductoInteres').value),
+    estadoPipeline: parseInt(document.getElementById('editEstadoPipeline').value),
+    prioridad: document.getElementById('editPrioridad').value,
+    esDecisor: document.getElementById('editEsDecisor').value === 'true',
+    notas: document.getElementById('editNotas').value
+  };
+
+  try {
+    const res = await fetch(`${API_BASE}/leads/${id}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+
+    if (res.ok) {
+      closeEditLeadModal();
+      await loadLeads();
+      await loadMetrics();
+      alert('Iglesia actualizada correctamente.');
+    } else {
+      const err = await res.json();
+      alert(`Error al actualizar: ${err.message || 'Verifique los datos.'}`);
+    }
+  } catch (err) {
+    console.error('Error actualizando iglesia:', err);
+  }
+}
+
+function confirmDeleteFromEdit() {
+  const id = document.getElementById('editLeadId').value;
+  closeEditLeadModal();
+  deleteLead(id);
+}
+
+// ==========================================
+// CRUD: ELIMINAR IGLESIA
+// ==========================================
+async function deleteLead(id) {
+  const lead = leadsData.find(l => l.id == id);
+  const nombre = lead ? lead.nombreIglesia : `con ID ${id}`;
+  if (!confirm(`¿Estás seguro de que deseas eliminar permanentemente la iglesia "${nombre}"?\nEsta acción no se puede deshacer.`)) {
+    return;
+  }
+
+  try {
+    const res = await fetch(`${API_BASE}/leads/${id}`, {
+      method: 'DELETE'
+    });
+
+    if (res.ok) {
+      await loadLeads();
+      await loadMetrics();
+      alert(`La iglesia "${nombre}" ha sido eliminada exitosamente.`);
+    } else {
+      alert('No se pudo eliminar el registro.');
+    }
+  } catch (err) {
+    console.error('Error eliminando lead:', err);
+  }
+}
+
+// ==========================================
+// CALIFICACIÓN T-O-N-D-M (LLAMADA COMERCIAL)
+// ==========================================
+async function openTondmModal(leadId) {
+  const lead = leadsData.find(l => l.id == leadId);
+  if (!lead) return;
+
+  document.getElementById('tondmLeadId').value = lead.id;
+  document.getElementById('tondmChurchSubtitle').textContent = `${lead.nombreIglesia} · ${lead.ciudad || ''}, ${lead.pais || ''} (Tel: ${lead.telefono || 'Sin teléfono'})`;
+
+  // Limpiar campos por defecto o precargar datos del lead
+  document.getElementById('tondmUrgencia').value = 'Corto plazo (1 mes)';
+  document.getElementById('tondmFechaTentativa').value = lead.fechaTentativaImplementacion || '';
+  document.getElementById('tondmEventoProximo').checked = false;
+
+  document.getElementById('tondmHerramienta').value = lead.herramientaActual || '';
+  document.getElementById('tondmMiembros').value = lead.cantidadMiembros || '';
+  document.getElementById('tondmSedes').value = lead.numeroSedes || 1;
+  document.getElementById('tondmCelulas').checked = lead.tieneCelulas || false;
+  document.getElementById('tondmCantidadCelulas').value = '';
+  document.getElementById('tondmEscuela').checked = lead.tieneEscuelaFormacion || false;
+  document.getElementById('tondmProcesosFuera').value = lead.procesosPorFuera || '';
+
+  document.getElementById('tondmDolor').value = lead.dolorPrincipal || '';
+  document.getElementById('tondmNivelDolor').value = 'Alto';
+  document.getElementById('tondmDetalleNecesidad').value = '';
+
+  document.getElementById('tondmNombreDecisor').value = lead.nombreContacto || '';
+  document.getElementById('tondmCargoDecisor').value = lead.cargoContacto || '';
+  document.getElementById('tondmDecisorPresente').checked = lead.esDecisor || false;
+  document.getElementById('tondmProcesoDecision').value = lead.quienDecide || '';
+
+  document.getElementById('tondmPresupuesto').value = lead.presupuestoEstimado || '';
+  document.getElementById('tondmMoneda').value = 'COP';
+  document.getElementById('tondmDisposicion').value = 'Media (Depende de cómo vean la Demo consultiva)';
+
+  document.getElementById('tondmResultado').value = 'Demo Agendada';
+  document.getElementById('tondmCalificadoPor').value = 'Comercial STARNET';
+  document.getElementById('tondmNotas').value = '';
+
+  // Consultar si ya tiene calificación TONDM previa guardada
+  try {
+    const res = await fetch(`${API_BASE}/leads/${leadId}/tondm`);
+    if (res.ok) {
+      const t = await res.json();
+      if (t) {
+        if (t.urgenciaImplementacion) document.getElementById('tondmUrgencia').value = t.urgenciaImplementacion;
+        if (t.fechaTentativaImplementacion) document.getElementById('tondmFechaTentativa').value = t.fechaTentativaImplementacion;
+        document.getElementById('tondmEventoProximo').checked = t.tieneEventoProximo || false;
+
+        if (t.herramientaActual) document.getElementById('tondmHerramienta').value = t.herramientaActual;
+        if (t.cantidadMiembros) document.getElementById('tondmMiembros').value = t.cantidadMiembros;
+        if (t.numeroSedes) document.getElementById('tondmSedes').value = t.numeroSedes;
+        document.getElementById('tondmCelulas').checked = t.tieneCelulas || false;
+        if (t.cantidadCelulas) document.getElementById('tondmCantidadCelulas').value = t.cantidadCelulas;
+        document.getElementById('tondmEscuela').checked = t.tieneEscuelaFormacion || false;
+        if (t.procesosPorFuera) document.getElementById('tondmProcesosFuera').value = t.procesosPorFuera;
+
+        if (t.dolorPrincipal) document.getElementById('tondmDolor').value = t.dolorPrincipal;
+        if (t.nivelDolor) document.getElementById('tondmNivelDolor').value = t.nivelDolor;
+        if (t.detalleNecesidad) document.getElementById('tondmDetalleNecesidad').value = t.detalleNecesidad;
+
+        if (t.nombreDecisor) document.getElementById('tondmNombreDecisor').value = t.nombreDecisor;
+        if (t.cargoDecisor) document.getElementById('tondmCargoDecisor').value = t.cargoDecisor;
+        document.getElementById('tondmDecisorPresente').checked = t.decisorPresenteEnLlamada || false;
+        if (t.procesoDecision) document.getElementById('tondmProcesoDecision').value = t.procesoDecision;
+
+        if (t.presupuestoEstimado) document.getElementById('tondmPresupuesto').value = t.presupuestoEstimado;
+        if (t.moneda) document.getElementById('tondmMoneda').value = t.moneda;
+        if (t.disposicionInversion) document.getElementById('tondmDisposicion').value = t.disposicionInversion;
+
+        if (t.resultadoLlamada) document.getElementById('tondmResultado').value = t.resultadoLlamada;
+        if (t.calificadoPor) document.getElementById('tondmCalificadoPor').value = t.calificadoPor;
+        if (t.notasLlamada) document.getElementById('tondmNotas').value = t.notasLlamada;
+      }
+    }
+  } catch (ex) {
+    // Si no hay previa, se mantiene con la precarga
+  }
+
+  document.getElementById('tondmModal').classList.remove('hidden');
+}
+
+function closeTondmModal() {
+  document.getElementById('tondmModal').classList.add('hidden');
+}
+
+async function saveTondm(e) {
+  e.preventDefault();
+  const leadId = document.getElementById('tondmLeadId').value;
+  const payload = {
+    urgenciaImplementacion: document.getElementById('tondmUrgencia').value,
+    fechaTentativaImplementacion: document.getElementById('tondmFechaTentativa').value,
+    tieneEventoProximo: document.getElementById('tondmEventoProximo').checked,
+
+    cantidadMiembros: document.getElementById('tondmMiembros').value ? parseInt(document.getElementById('tondmMiembros').value) : null,
+    numeroSedes: document.getElementById('tondmSedes').value ? parseInt(document.getElementById('tondmSedes').value) : 1,
+    tieneCelulas: document.getElementById('tondmCelulas').checked,
+    cantidadCelulas: document.getElementById('tondmCantidadCelulas').value ? parseInt(document.getElementById('tondmCantidadCelulas').value) : null,
+    tieneEscuelaFormacion: document.getElementById('tondmEscuela').checked,
+    herramientaActual: document.getElementById('tondmHerramienta').value,
+    procesosPorFuera: document.getElementById('tondmProcesosFuera').value,
+
+    dolorPrincipal: document.getElementById('tondmDolor').value,
+    nivelDolor: document.getElementById('tondmNivelDolor').value,
+    detalleNecesidad: document.getElementById('tondmDetalleNecesidad').value,
+
+    nombreDecisor: document.getElementById('tondmNombreDecisor').value,
+    cargoDecisor: document.getElementById('tondmCargoDecisor').value,
+    decisorPresenteEnLlamada: document.getElementById('tondmDecisorPresente').checked,
+    procesoDecision: document.getElementById('tondmProcesoDecision').value,
+
+    presupuestoEstimado: document.getElementById('tondmPresupuesto').value ? parseFloat(document.getElementById('tondmPresupuesto').value) : null,
+    moneda: document.getElementById('tondmMoneda').value,
+    disposicionInversion: document.getElementById('tondmDisposicion').value,
+
+    resultadoLlamada: document.getElementById('tondmResultado').value,
+    calificadoPor: document.getElementById('tondmCalificadoPor').value,
+    notasLlamada: document.getElementById('tondmNotas').value,
+    calificacionCompletada: true
+  };
+
+  try {
+    const res = await fetch(`${API_BASE}/leads/${leadId}/tondm`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+
+    if (res.ok) {
+      closeTondmModal();
+      await loadLeads();
+      await loadMetrics();
+      alert('¡Calificación T-O-N-D-M guardada con éxito!\nLos datos se sincronizaron con el expediente comercial.');
+    } else {
+      const err = await res.json();
+      alert(`Error al guardar calificación: ${err.message || 'Verifique los campos.'}`);
+    }
+  } catch (err) {
+    console.error('Error guardando TONDM:', err);
   }
 }
 

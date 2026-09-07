@@ -20,6 +20,7 @@ public class LeadService : ILeadService
     {
         var query = _context.Leads
             .Include(l => l.Interacciones)
+            .Include(l => l.CalificacionTondm)
             .AsNoTracking()
             .AsQueryable();
 
@@ -66,6 +67,7 @@ public class LeadService : ILeadService
     {
         return await _context.Leads
             .Include(l => l.Interacciones.OrderByDescending(i => i.Fecha))
+            .Include(l => l.CalificacionTondm)
             .FirstOrDefaultAsync(l => l.Id == id);
     }
 
@@ -319,14 +321,150 @@ public class LeadService : ILeadService
         return stats;
     }
 
-    public async Task<bool> DeleteLeadAsync(int id)
+    public async Task<bool> UpdateLeadAsync(int id, LeadUpdateDto dto)
     {
         var lead = await _context.Leads.FindAsync(id);
+        if (lead == null) return false;
+
+        lead.NombreIglesia = dto.NombreIglesia.Trim();
+        lead.Ciudad = string.IsNullOrWhiteSpace(dto.Ciudad) ? lead.Ciudad : dto.Ciudad.Trim();
+        lead.Pais = string.IsNullOrWhiteSpace(dto.Pais) ? lead.Pais : dto.Pais.Trim();
+        lead.Direccion = dto.Direccion?.Trim();
+        lead.Telefono = string.IsNullOrWhiteSpace(dto.Telefono) ? null : CleanPhoneNumber(dto.Telefono);
+        lead.Email = dto.Email?.Trim().ToLower();
+        lead.SitioWeb = dto.SitioWeb?.Trim();
+        lead.RedesSociales = dto.RedesSociales?.Trim();
+        lead.NombreContacto = dto.NombreContacto?.Trim();
+        lead.CargoContacto = dto.CargoContacto?.Trim();
+        lead.EsDecisor = dto.EsDecisor;
+        lead.ProductoInteres = dto.ProductoInteres;
+        lead.EstadoPipeline = dto.EstadoPipeline;
+        lead.Origen = dto.Origen;
+        lead.Prioridad = dto.Prioridad?.Trim();
+        lead.Notas = dto.Notas?.Trim();
+        lead.ObjecionPrincipal = dto.ObjecionPrincipal?.Trim();
+        lead.FechaActualizacion = DateTime.UtcNow;
+        lead.UltimaActividad = DateTime.UtcNow;
+
+        await _context.SaveChangesAsync();
+        return true;
+    }
+
+    public async Task<bool> DeleteLeadAsync(int id)
+    {
+        var lead = await _context.Leads
+            .Include(l => l.Interacciones)
+            .Include(l => l.CalificacionTondm)
+            .FirstOrDefaultAsync(l => l.Id == id);
+
         if (lead == null) return false;
 
         _context.Leads.Remove(lead);
         await _context.SaveChangesAsync();
         return true;
+    }
+
+    public async Task<CalificacionTondm?> GetTondmAsync(int leadId)
+    {
+        return await _context.CalificacionesTondm
+            .FirstOrDefaultAsync(c => c.LeadId == leadId);
+    }
+
+    public async Task<CalificacionTondm> SaveTondmAsync(int leadId, TondmUpsertDto dto)
+    {
+        var lead = await _context.Leads
+            .Include(l => l.Interacciones)
+            .FirstOrDefaultAsync(l => l.Id == leadId);
+
+        if (lead == null)
+            throw new KeyNotFoundException($"No se encontró la iglesia con ID {leadId}.");
+
+        var calificacion = await _context.CalificacionesTondm
+            .FirstOrDefaultAsync(c => c.LeadId == leadId);
+
+        if (calificacion == null)
+        {
+            calificacion = new CalificacionTondm { LeadId = leadId };
+            _context.CalificacionesTondm.Add(calificacion);
+        }
+
+        // T - Tiempo
+        calificacion.UrgenciaImplementacion = dto.UrgenciaImplementacion?.Trim();
+        calificacion.FechaTentativaImplementacion = dto.FechaTentativaImplementacion?.Trim();
+        calificacion.TieneEventoProximo = dto.TieneEventoProximo;
+
+        // O - Operación
+        calificacion.CantidadMiembros = dto.CantidadMiembros;
+        calificacion.NumeroSedes = dto.NumeroSedes > 0 ? dto.NumeroSedes : 1;
+        calificacion.TieneCelulas = dto.TieneCelulas;
+        calificacion.CantidadCelulas = dto.CantidadCelulas;
+        calificacion.TieneEscuelaFormacion = dto.TieneEscuelaFormacion;
+        calificacion.HerramientaActual = dto.HerramientaActual?.Trim();
+        calificacion.ProcesosPorFuera = dto.ProcesosPorFuera?.Trim();
+
+        // N - Necesidad & Dolor
+        calificacion.DolorPrincipal = dto.DolorPrincipal?.Trim();
+        calificacion.NivelDolor = dto.NivelDolor?.Trim();
+        calificacion.DetalleNecesidad = dto.DetalleNecesidad?.Trim();
+
+        // D - Decisor
+        calificacion.NombreDecisor = dto.NombreDecisor?.Trim();
+        calificacion.CargoDecisor = dto.CargoDecisor?.Trim();
+        calificacion.DecisorPresenteEnLlamada = dto.DecisorPresenteEnLlamada;
+        calificacion.ProcesoDecision = dto.ProcesoDecision?.Trim();
+
+        // M - Monto
+        calificacion.PresupuestoEstimado = dto.PresupuestoEstimado;
+        calificacion.Moneda = string.IsNullOrWhiteSpace(dto.Moneda) ? "COP" : dto.Moneda.Trim();
+        calificacion.DisposicionInversion = dto.DisposicionInversion?.Trim();
+
+        // Auditoría & Resultado
+        calificacion.CalificadoPor = string.IsNullOrWhiteSpace(dto.CalificadoPor) ? "Comercial STARNET" : dto.CalificadoPor.Trim();
+        calificacion.ResultadoLlamada = dto.ResultadoLlamada?.Trim();
+        calificacion.NotasLlamada = dto.NotasLlamada?.Trim();
+        calificacion.CalificacionCompletada = dto.CalificacionCompletada;
+        calificacion.FechaActualizacion = DateTime.UtcNow;
+
+        // Sincronizar campos clave en el registro Lead
+        if (dto.CantidadMiembros.HasValue) lead.CantidadMiembros = dto.CantidadMiembros;
+        if (dto.NumeroSedes > 0) lead.NumeroSedes = dto.NumeroSedes;
+        lead.TieneCelulas = dto.TieneCelulas;
+        lead.TieneEscuelaFormacion = dto.TieneEscuelaFormacion;
+        if (!string.IsNullOrWhiteSpace(dto.HerramientaActual)) lead.HerramientaActual = dto.HerramientaActual.Trim();
+        if (!string.IsNullOrWhiteSpace(dto.ProcesosPorFuera)) lead.ProcesosPorFuera = dto.ProcesosPorFuera.Trim();
+        if (!string.IsNullOrWhiteSpace(dto.DolorPrincipal)) lead.DolorPrincipal = dto.DolorPrincipal.Trim();
+        if (!string.IsNullOrWhiteSpace(dto.FechaTentativaImplementacion)) lead.FechaTentativaImplementacion = dto.FechaTentativaImplementacion.Trim();
+        if (dto.PresupuestoEstimado.HasValue) lead.PresupuestoEstimado = dto.PresupuestoEstimado;
+        if (!string.IsNullOrWhiteSpace(dto.NombreDecisor) && string.IsNullOrWhiteSpace(lead.NombreContacto)) lead.NombreContacto = dto.NombreDecisor.Trim();
+        if (!string.IsNullOrWhiteSpace(dto.CargoDecisor) && string.IsNullOrWhiteSpace(lead.CargoContacto)) lead.CargoContacto = dto.CargoDecisor.Trim();
+        if (dto.DecisorPresenteEnLlamada) lead.EsDecisor = true;
+
+        // Si se agendó demo, avanzar pipeline automáticamente si estaba en Nuevo o Contactado
+        if (dto.ResultadoLlamada == "Demo Agendada" && (lead.EstadoPipeline == PipelineStage.Nuevo || lead.EstadoPipeline == PipelineStage.Contactado))
+        {
+            lead.EstadoPipeline = PipelineStage.DemoAgendada;
+        }
+        else if (lead.EstadoPipeline == PipelineStage.Nuevo)
+        {
+            lead.EstadoPipeline = PipelineStage.Contactado;
+        }
+
+        lead.FechaActualizacion = DateTime.UtcNow;
+        lead.UltimaActividad = DateTime.UtcNow;
+
+        // Registrar interacción de llamada en el historial
+        lead.Interacciones.Add(new Interaccion
+        {
+            LeadId = leadId,
+            Tipo = InteractionType.Llamada,
+            Titulo = $"Calificación TONDM: {dto.ResultadoLlamada ?? "Llamada realizada"}",
+            Detalle = $"Dolor: {dto.DolorPrincipal ?? "No especificado"} | Urgencia: {dto.UrgenciaImplementacion ?? "N/A"} | Decisor: {dto.NombreDecisor ?? "No especificado"} ({dto.CargoDecisor ?? "-"}) | Presupuesto: {dto.PresupuestoEstimado?.ToString("N0") ?? "N/A"} {dto.Moneda}. Notas: {dto.NotasLlamada ?? "-"}",
+            Fecha = DateTime.UtcNow,
+            Exitoso = true
+        });
+
+        await _context.SaveChangesAsync();
+        return calificacion;
     }
 
     public string GenerateWhatsAppLink(Lead lead, string tipoScript)

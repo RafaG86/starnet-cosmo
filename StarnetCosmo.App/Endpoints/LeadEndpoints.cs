@@ -117,6 +117,40 @@ public static class LeadEndpoints
         .WithName("GetStarnetHubExport")
         .WithSummary("Genera la ficha formal de Handoff para pegar en STARNET HUB");
 
+        // Actualizar datos de un lead (CRUD)
+        group.MapPut("/{id:int}", async (int id, [FromBody] LeadUpdateDto dto, [FromServices] ILeadService leadService) =>
+        {
+            var updated = await leadService.UpdateLeadAsync(id, dto);
+            return updated ? Results.Ok(new { message = "Iglesia actualizada correctamente." }) : Results.NotFound();
+        })
+        .WithName("UpdateLead")
+        .WithSummary("Actualiza los datos de la iglesia");
+
+        // Obtener calificación T-O-N-D-M
+        group.MapGet("/{id:int}/tondm", async (int id, [FromServices] ILeadService leadService) =>
+        {
+            var tondm = await leadService.GetTondmAsync(id);
+            return tondm != null ? Results.Ok(tondm) : Results.NotFound(new { message = "No hay calificación TONDM registrada para este lead." });
+        })
+        .WithName("GetTondm")
+        .WithSummary("Obtiene los detalles de la calificación TONDM de la llamada telefónica");
+
+        // Guardar calificación T-O-N-D-M
+        group.MapPut("/{id:int}/tondm", async (int id, [FromBody] TondmUpsertDto dto, [FromServices] ILeadService leadService) =>
+        {
+            try
+            {
+                var result = await leadService.SaveTondmAsync(id, dto);
+                return Results.Ok(result);
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return Results.NotFound(new { message = ex.Message });
+            }
+        })
+        .WithName("SaveTondm")
+        .WithSummary("Guarda o actualiza la calificación TONDM realizada durante la llamada de prospección");
+
         // Eliminar lead
         group.MapDelete("/{id:int}", async (int id, [FromServices] ILeadService leadService) =>
         {

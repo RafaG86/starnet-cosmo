@@ -415,6 +415,316 @@ print("Resultado:", res.json())</pre>
     </div>
   </div>
 
+  <!-- MODAL: EDITAR IGLESIA (CRUD) -->
+  <div id="editLeadModal" class="modal-backdrop hidden">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <h3 style="font-size:1.05rem;">✏️ Editar Registro de Iglesia</h3>
+        <button class="btn btn-secondary btn-sm" onclick="closeEditLeadModal()">✕</button>
+      </div>
+      <div class="modal-body">
+        <form id="editLeadForm" onsubmit="saveEditLead(event)">
+          <input type="hidden" id="editLeadId" name="id">
+          <div class="form-grid">
+            <div class="form-group full-width">
+              <label>Nombre de la Iglesia *</label>
+              <input type="text" id="editNombreIglesia" name="nombreIglesia" class="form-control" required>
+            </div>
+            <div class="form-group">
+              <label>País *</label>
+              <input type="text" id="editPais" name="pais" class="form-control" required>
+            </div>
+            <div class="form-group">
+              <label>Ciudad *</label>
+              <input type="text" id="editCiudad" name="ciudad" class="form-control" required>
+            </div>
+            <div class="form-group full-width">
+              <label>Dirección Física</label>
+              <input type="text" id="editDireccion" name="direccion" class="form-control" placeholder="Calle / Carrera / Avenida...">
+            </div>
+            <div class="form-group">
+              <label>Teléfono (WhatsApp o Fijo)</label>
+              <input type="text" id="editTelefono" name="telefono" class="form-control">
+            </div>
+            <div class="form-group">
+              <label>Correo Electrónico</label>
+              <input type="email" id="editEmail" name="email" class="form-control">
+            </div>
+            <div class="form-group">
+              <label>Sitio Web</label>
+              <input type="url" id="editSitioWeb" name="sitioWeb" class="form-control" placeholder="https://...">
+            </div>
+            <div class="form-group">
+              <label>Redes Sociales</label>
+              <input type="text" id="editRedesSociales" name="redesSociales" class="form-control" placeholder="@iglesia en IG o FB">
+            </div>
+            <div class="form-group">
+              <label>Nombre Contacto / Pastor</label>
+              <input type="text" id="editNombreContacto" name="nombreContacto" class="form-control">
+            </div>
+            <div class="form-group">
+              <label>Cargo del Contacto</label>
+              <input type="text" id="editCargoContacto" name="cargoContacto" class="form-control">
+            </div>
+            <div class="form-group">
+              <label>Producto de Interés</label>
+              <select id="editProductoInteres" name="productoInteres" class="form-control">
+                <option value="0">EkklesiApp</option>
+                <option value="1">ChordSync</option>
+                <option value="2">SermonSync</option>
+                <option value="3">Suite Completa</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Etapa del Pipeline</label>
+              <select id="editEstadoPipeline" name="estadoPipeline" class="form-control">
+                <option value="0">Nuevo</option>
+                <option value="1">Contactado</option>
+                <option value="2">Calificado</option>
+                <option value="3">Demo Agendada</option>
+                <option value="4">Demo Realizada</option>
+                <option value="5">Cotización</option>
+                <option value="6">Negociación</option>
+                <option value="7">Ganado</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Prioridad</label>
+              <select id="editPrioridad" name="prioridad" class="form-control">
+                <option value="Alta">Alta</option>
+                <option value="Media">Media</option>
+                <option value="Baja">Baja</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>¿Es Decisor?</label>
+              <select id="editEsDecisor" name="esDecisor" class="form-control">
+                <option value="false">No / Pendiente verificar</option>
+                <option value="true">Sí (Toma decisiones de compra)</option>
+              </select>
+            </div>
+            <div class="form-group full-width">
+              <label>Notas de Prospección</label>
+              <textarea id="editNotas" name="notas" class="form-control" rows="3"></textarea>
+            </div>
+          </div>
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-top:1.25rem;">
+            <button type="button" class="btn btn-danger" onclick="confirmDeleteFromEdit()">🗑️ Eliminar Iglesia</button>
+            <div style="display:flex;gap:0.5rem;">
+              <button type="button" class="btn btn-secondary" onclick="closeEditLeadModal()">Cancelar</button>
+              <button type="submit" class="btn btn-primary">Guardar Cambios</button>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: CALIFICACIÓN T-O-N-D-M (LLAMADA COMERCIAL) -->
+  <div id="tondmModal" class="modal-backdrop hidden">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-header">
+        <div>
+          <h3 style="font-size:1.1rem;display:flex;align-items:center;gap:0.5rem;">
+            <span>📞</span> Calificación T-O-N-D-M (Llamada de Prospección)
+          </h3>
+          <span id="tondmChurchSubtitle" style="font-size:0.82rem;color:var(--text-secondary);"></span>
+        </div>
+        <button class="btn btn-secondary btn-sm" onclick="closeTondmModal()">✕</button>
+      </div>
+      <div class="modal-body">
+        <p style="font-size:0.8rem;color:var(--text-secondary);margin-bottom:1rem;">
+          Diligencia este formulario mientras hablas por teléfono con la iglesia. Los datos clave se sincronizarán automáticamente con el expediente del cliente.
+        </p>
+        <form id="tondmForm" onsubmit="saveTondm(event)">
+          <input type="hidden" id="tondmLeadId" name="leadId">
+
+          <!-- T - TIEMPO -->
+          <div class="tondm-card">
+            <div class="tondm-header">
+              <span class="tondm-tag tondm-t">T</span>
+              <strong>TIEMPO (Momento y urgencia de implementación)</strong>
+            </div>
+            <div class="form-grid">
+              <div class="form-group">
+                <label>Urgencia de Implementación</label>
+                <select id="tondmUrgencia" name="urgenciaImplementacion" class="form-control">
+                  <option value="Inmediato (1-2 semanas)">🔥 Inmediato (1 - 2 semanas)</option>
+                  <option value="Corto plazo (1 mes)" selected>⚡ Corto plazo (1 mes)</option>
+                  <option value="Mediano plazo (2-3 meses)">📅 Mediano plazo (2 - 3 meses)</option>
+                  <option value="Solo explorando">🔍 Solo explorando alternativas</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label>Fecha Tentativa</label>
+                <input type="text" id="tondmFechaTentativa" name="fechaTentativaImplementacion" class="form-control" placeholder="Ej: Próximo mes, inicio de año...">
+              </div>
+              <div class="form-group full-width">
+                <label style="display:flex;align-items:center;gap:0.5rem;cursor:pointer;">
+                  <input type="checkbox" id="tondmEventoProximo" name="tieneEventoProximo">
+                  <span>¿Tienen un evento próximo (aniversario, convención, retiro) que apresure la decisión?</span>
+                </label>
+              </div>
+            </div>
+          </div>
+
+          <!-- O - OPERACIÓN -->
+          <div class="tondm-card">
+            <div class="tondm-header">
+              <span class="tondm-tag tondm-o">O</span>
+              <strong>OPERACIÓN & ORGANIZACIÓN (Cómo funcionan hoy)</strong>
+            </div>
+            <div class="form-grid">
+              <div class="form-group">
+                <label>Herramienta Actual</label>
+                <input type="text" id="tondmHerramienta" name="herramientaActual" class="form-control" placeholder="Ej: Excel, WhatsApp, Planning Center, Papel...">
+              </div>
+              <div class="form-group">
+                <label>Cantidad Aprox. de Miembros</label>
+                <input type="number" id="tondmMiembros" name="cantidadMiembros" class="form-control" placeholder="Ej: 250">
+              </div>
+              <div class="form-group">
+                <label>Número de Sedes</label>
+                <input type="number" id="tondmSedes" name="numeroSedes" class="form-control" value="1">
+              </div>
+              <div class="form-group">
+                <label>¿Tienen Células / Grupos en Casa?</label>
+                <div style="display:flex;gap:1rem;align-items:center;margin-top:0.4rem;">
+                  <label><input type="checkbox" id="tondmCelulas" name="tieneCelulas"> Sí tienen</label>
+                  <input type="number" id="tondmCantidadCelulas" name="cantidadCelulas" class="form-control" placeholder="# Células" style="width:110px;">
+                </div>
+              </div>
+              <div class="form-group full-width">
+                <label style="display:flex;align-items:center;gap:0.5rem;cursor:pointer;">
+                  <input type="checkbox" id="tondmEscuela" name="tieneEscuelaFormacion">
+                  <span>¿Tienen Escuela de Líderes / Discipulado / Formación?</span>
+                </label>
+              </div>
+              <div class="form-group full-width">
+                <label>Procesos que quedan por fuera / desordenados</label>
+                <input type="text" id="tondmProcesosFuera" name="procesosPorFuera" class="form-control" placeholder="Ej: Control de asistencia en papel, seguimiento pastoral en chats personales...">
+              </div>
+            </div>
+          </div>
+
+          <!-- N - NECESIDAD / DOLOR -->
+          <div class="tondm-card">
+            <div class="tondm-header">
+              <span class="tondm-tag tondm-n">N</span>
+              <strong>NECESIDAD & DOLOR (Pain points expresados)</strong>
+            </div>
+            <div class="form-grid">
+              <div class="form-group">
+                <label>Dolor Principal Identificado</label>
+                <input type="text" id="tondmDolor" name="dolorPrincipal" class="form-control" placeholder="Ej: No saben quién deja de asistir, desorden en alabanza...">
+              </div>
+              <div class="form-group">
+                <label>Nivel de Dolor / Urgencia</label>
+                <select id="tondmNivelDolor" name="nivelDolor" class="form-control">
+                  <option value="Crítico (Muy alto)">🔴 Crítico (Muy alto - Urge solucionar)</option>
+                  <option value="Alto" selected>🟠 Alto (Causa pérdidas de tiempo/miembros)</option>
+                  <option value="Medio">🟡 Medio (Incómodo pero manejable)</option>
+                  <option value="Bajo">🟢 Bajo (En zona de confort)</option>
+                </select>
+              </div>
+              <div class="form-group full-width">
+                <label>Relato de la Necesidad (Palabras exactas del pastor/líder)</label>
+                <textarea id="tondmDetalleNecesidad" name="detalleNecesidad" class="form-control" rows="2" placeholder="Describir lo que dijeron en la llamada..."></textarea>
+              </div>
+            </div>
+          </div>
+
+          <!-- D - DECISOR -->
+          <div class="tondm-card">
+            <div class="tondm-header">
+              <span class="tondm-tag tondm-d">D</span>
+              <strong>DECISOR (Quién toma la decisión final)</strong>
+            </div>
+            <div class="form-grid">
+              <div class="form-group">
+                <label>Nombre del Decisor</label>
+                <input type="text" id="tondmNombreDecisor" name="nombreDecisor" class="form-control" placeholder="Ej: Pastor Carlos Gómez">
+              </div>
+              <div class="form-group">
+                <label>Cargo / Rol</label>
+                <input type="text" id="tondmCargoDecisor" name="cargoDecisor" class="form-control" placeholder="Ej: Pastor Principal, Junta, Administrador">
+              </div>
+              <div class="form-group">
+                <label style="display:flex;align-items:center;gap:0.5rem;cursor:pointer;margin-top:0.4rem;">
+                  <input type="checkbox" id="tondmDecisorPresente" name="decisorPresenteEnLlamada">
+                  <span>¿El decisor estuvo presente en esta llamada?</span>
+                </label>
+              </div>
+              <div class="form-group">
+                <label>Proceso de Decisión</label>
+                <input type="text" id="tondmProcesoDecision" name="procesoDecision" class="form-control" placeholder="Ej: Pastor solo, Consejo pastoral mensual...">
+              </div>
+            </div>
+          </div>
+
+          <!-- M - MONTO / PRESUPUESTO -->
+          <div class="tondm-card">
+            <div class="tondm-header">
+              <span class="tondm-tag tondm-m">M</span>
+              <strong>MONTO & PRESUPUESTO (Capacidad de inversión)</strong>
+            </div>
+            <div class="form-grid">
+              <div class="form-group">
+                <label>Presupuesto Estimado / Disposición</label>
+                <input type="number" id="tondmPresupuesto" name="presupuestoEstimado" class="form-control" placeholder="Ej: 350000">
+              </div>
+              <div class="form-group">
+                <label>Moneda</label>
+                <select id="tondmMoneda" name="moneda" class="form-control">
+                  <option value="COP" selected>COP ($ Pesos Colombianos)</option>
+                  <option value="USD">USD ($ Dólares)</option>
+                  <option value="MXN">MXN ($ Pesos Mexicanos)</option>
+                  <option value="ARS">ARS ($ Pesos Argentinos)</option>
+                </select>
+              </div>
+              <div class="form-group full-width">
+                <label>Disposición a Invertir</label>
+                <select id="tondmDisposicion" name="disposicionInversion" class="form-control">
+                  <option value="Alta (Tienen presupuesto y buscan solución profesional)">Alta (Tienen presupuesto y buscan solución profesional)</option>
+                  <option value="Media (Depende de cómo vean la Demo consultiva)" selected>Media (Depende de cómo vean la Demo consultiva)</option>
+                  <option value="Baja (Buscan algo gratuito o con resistencia al precio)">Baja (Buscan algo gratuito o con resistencia al precio)</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <!-- RESULTADO DE LA LLAMADA -->
+          <div style="background:var(--bg-main);padding:1rem;border-radius:var(--radius-md);margin-bottom:1rem;">
+            <div class="form-grid">
+              <div class="form-group">
+                <label>Resultado de la Llamada *</label>
+                <select id="tondmResultado" name="resultadoLlamada" class="form-control" required>
+                  <option value="Demo Agendada">🚀 Demo Agendada (Avanzar a Demo)</option>
+                  <option value="Interesado (Seguimiento)">💬 Interesado (Requiere seguimiento)</option>
+                  <option value="Volver a Llamar">📞 Volver a llamar (No disponible ahora)</option>
+                  <option value="No Califica / Descartado">❌ No califica / Descartado</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label>Calificado Por</label>
+                <input type="text" id="tondmCalificadoPor" name="calificadoPor" class="form-control" value="Comercial STARNET">
+              </div>
+              <div class="form-group full-width">
+                <label>Notas de la Llamada Telefónica</label>
+                <textarea id="tondmNotas" name="notasLlamada" class="form-control" rows="2" placeholder="Resumen de compromisos, objeciones o fecha pactada..."></textarea>
+              </div>
+            </div>
+          </div>
+
+          <div style="display:flex;justify-content:flex-end;gap:0.5rem;">
+            <button type="button" class="btn btn-secondary" onclick="closeTondmModal()">Cancelar</button>
+            <button type="submit" class="btn btn-primary" style="background:linear-gradient(135deg,#6366f1,#a855f7);">💾 Guardar Calificación TONDM</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
   <script src="/js/app.js"></script>
 </body>
 </html>
